@@ -48,6 +48,7 @@ def _refresh(queue: dict):
     print(_render(queue))
     print()
 
+
 MAX_DEPTH = 2
 
 
