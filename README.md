@@ -4,8 +4,9 @@
 
 灵感来源：Anthropic 工程博客 [Scaling Managed Agents: Decoupling the brain from the hands](https://www.anthropic.com/research/scaling-managed-agents)
 
-Bilbil up主：小天fotos 
+Bilibili up主：小天fotos  
 https://www.bilibili.com/video/BV1DB546wEb8?buvid=YB469CB6996DD13F40D59A4DC7656AB842FE&from_spmid=main.my-fav.0.0&is_story_h5=false&mid=UEemUv4BZmXFKc3JIM851g%3D%3D&plat_id=114&share_from=ugc&share_medium=iphone&share_plat=ios&share_session_id=4820DD47-6017-48A9-A140-52DEB90AF283&share_source=WEIXIN&share_tag=s_i&timestamp=1778604771&unique_k=HNlLsR7&up_id=28554995
+
 ---
 
 ## 工作原理
@@ -60,6 +61,8 @@ pip install -r requirements.txt
 | `max_parallel_workers` | 最多同时运行几个 Worker，默认 3 |
 | `worker_command` | Worker 执行命令，默认用本地 Claude Code CLI |
 
+Brain 和 Worker 可以独立替换为其他 AI 服务，详见 [examples/README.md](examples/README.md)。
+
 ---
 
 ## 使用
@@ -91,6 +94,34 @@ python3 harness.py --resume
 
 已完成的任务自动跳过，从中断处继续。
 
+### 监控任务进度
+
+harness 运行中（或结束后），另开一个终端，使用 `monitor.py`：
+
+```bash
+python3 monitor.py              # 快照：查看当前任务状态表格
+python3 monitor.py --watch      # 实时监控：每秒自动刷新
+python3 monitor.py --tail       # 日志流：显示最近 30 条事件
+python3 monitor.py --tail 50    # 日志流：显示最近 N 条事件
+python3 monitor.py --summary    # 摘要报告：耗时、成功/失败统计、错误详情
+```
+
+`--watch` 效果示例：
+
+```
+目标：写一个 Flask Web 应用，支持用户注册登录
+会话：sess-001  创建：10:01:02  状态：RUNNING
+
+进度：2/4 完成  1 运行中  0 失败
+
+ID         状态       开始       耗时     描述
+--------------------------------------------------------------------------------
+t1         ✓ DONE     10:01:03   12s      设计数据库 schema
+t2         ◉ RUNNING  10:01:16   8s       实现后端 API
+t3         ○ PENDING  -          -        实现前端页面
+t4         ○ PENDING  -          -        写集成测试
+```
+
 ---
 
 ## 任务状态
@@ -120,11 +151,95 @@ python3 harness.py --resume
 ## 项目结构
 
 ```
-├── harness.py       # 主入口，编排调度逻辑
-├── brain.py         # 任务拆解（DeepSeek API）
-├── worker.py        # Worker 封装（claude -p subprocess）
-├── store.py         # 持久化读写
-├── config.json      # 配置文件
-├── task_queue.json  # 运行时生成
-└── session_store.jsonl  # 运行时生成
+├── harness.py                # 主入口，编排调度逻辑
+├── monitor.py                # 监控工具：实时状态、事件日志、执行摘要
+├── brain.py                  # Brain：任务拆解与复杂度判断
+├── worker.py                 # Worker：默认 CLI subprocess 实现
+├── store.py                  # 持久化读写
+├── config.example.json       # 配置模板
+├── examples/
+│   ├── README.md                       # Worker 接入指南
+│   ├── worker_anthropic_sdk.py         # Worker：Anthropic Python SDK
+│   └── worker_openai_compatible.py     # Worker：OpenAI 兼容 API
+└── tests/
 ```
+
+运行时生成（已加入 .gitignore）：
+- `task_queue.json` — 任务状态机
+- `session_store.jsonl` — 事件日志
+
+---
+
+---
+
+# Harness Agent (English)
+
+Break AI agents free from single-conversation limits. Automatically decompose complex goals into subtasks, execute them in parallel, and resume anytime after interruption.
+
+Inspired by the Anthropic engineering blog: [Scaling Managed Agents: Decoupling the brain from the hands](https://www.anthropic.com/research/scaling-managed-agents)
+
+---
+
+## How It Works
+
+```
+You enter a goal
+  └── Brain (any LLM) decomposes it into subtasks
+        └── Complex subtasks are recursively split (up to 2 levels)
+              └── Workers execute subtasks in parallel
+                    └── Results are persisted locally — interrupt and resume anytime
+```
+
+Brain handles the thinking. Workers handle the doing. The two are fully decoupled and can each be swapped for any AI service independently.
+
+---
+
+## Quick Start
+
+**Requirements:** Python 3.10+
+
+```bash
+git clone <repo-url>
+cd harness-agent
+pip install -r requirements.txt
+cp config.example.json config.json
+# Edit config.json and fill in your API keys
+python3 harness.py "your goal"
+```
+
+---
+
+## Usage
+
+### Start a new task
+
+```bash
+python3 harness.py "your goal"
+```
+
+### Resume after interruption
+
+```bash
+python3 harness.py --resume
+```
+
+### Monitor task progress
+
+```bash
+python3 monitor.py              # Snapshot: current task status table
+python3 monitor.py --watch      # Live view: auto-refreshes every second
+python3 monitor.py --tail       # Tail: stream the last 30 event log entries
+python3 monitor.py --tail 50    # Tail: show last N entries
+python3 monitor.py --summary    # Summary: timing, pass/fail counts, error details
+```
+
+---
+
+## Pluggable AI Backends
+
+| Role | Default | Alternatives |
+|---|---|---|
+| Brain (task decomposition) | DeepSeek | OpenAI, local Ollama, any OpenAI-compatible API |
+| Worker (task execution) | Claude Code CLI | Anthropic SDK, OpenAI SDK, local models |
+
+See [examples/README.md](examples/README.md) for setup instructions.
