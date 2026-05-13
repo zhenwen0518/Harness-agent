@@ -3,3 +3,4 @@ __pycache__/
 task_queue.json
 session_store.jsonl
 .DS_Store
+config.json

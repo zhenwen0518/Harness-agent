@@ -1,8 +1,0 @@
-{
-  "brain_provider": "stub",
-  "brain_api_key": "填入你的 API Key",
-  "brain_model": "deepseek-chat",
-  "brain_base_url": "https://api.deepseek.com/v1",
-  "worker_command": ["claude", "-p"],
-  "max_parallel_workers": 3
-}
