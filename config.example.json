@@ -1,0 +1,12 @@
+{
+  "_comment": "Copy this file to config.json and fill in your keys",
+
+  "brain_provider": "openai_compatible",
+  "brain_api_key": "YOUR_BRAIN_API_KEY",
+  "brain_model": "deepseek-chat",
+  "brain_base_url": "https://api.deepseek.com/v1",
+
+  "worker_command": ["claude", "-p", "--dangerously-skip-permissions"],
+
+  "max_parallel_workers": 3
+}
