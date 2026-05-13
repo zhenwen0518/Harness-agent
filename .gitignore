@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+task_queue.json
+session_store.jsonl
+.DS_Store
