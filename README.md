@@ -3,6 +3,7 @@
 让 AI Agent 突破单次对话限制，把复杂目标拆解为子任务并行执行，支持随时中断续接。
 
 灵感来源：Anthropic 工程博客 [Scaling Managed Agents: Decoupling the brain from the hands](https://www.anthropic.com/research/scaling-managed-agents)
+
 Bilbil up主：小天fotos 
 https://www.bilibili.com/video/BV1DB546wEb8?buvid=YB469CB6996DD13F40D59A4DC7656AB842FE&from_spmid=main.my-fav.0.0&is_story_h5=false&mid=UEemUv4BZmXFKc3JIM851g%3D%3D&plat_id=114&share_from=ugc&share_medium=iphone&share_plat=ios&share_session_id=4820DD47-6017-48A9-A140-52DEB90AF283&share_source=WEIXIN&share_tag=s_i&timestamp=1778604771&unique_k=HNlLsR7&up_id=28554995
 ---
