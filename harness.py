@@ -115,6 +115,11 @@ def main():
     print("[Harness] 正在分析目标...")
 
     tasks = decompose_goal(goal)
+    for task in tasks:
+        task.setdefault("status", "PENDING")
+        task.setdefault("result", None)
+        task.setdefault("started_at", None)
+        task.setdefault("finished_at", None)
     queue = new_session(goal)
     queue["tasks"] = tasks
 
