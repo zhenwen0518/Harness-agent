@@ -1,20 +1,20 @@
 """
-Worker: OpenAI 兼容 API
+Worker: OpenAI-compatible API
 
-适合接入：
-- OpenAI（GPT-4o、o3）
-- Groq（llama、mixtral，速度极快）
-- 本地模型（Ollama、LM Studio，base_url 改成 http://localhost:11434/v1）
-- 任何支持 OpenAI Chat Completions 格式的服务
+Works with:
+- OpenAI (GPT-4o, o3)
+- Groq (llama, mixtral — very fast)
+- Local models via Ollama or LM Studio (set base_url to http://localhost:11434/v1)
+- Any service supporting the OpenAI Chat Completions format
 
-使用方法：
-  将 worker.py 替换为本文件，或在 harness.py 中修改导入：
+Usage:
+  Replace worker.py with this file, or update the import in harness.py:
   from examples.worker_openai_compatible import run_worker
 
-config.json 需要增加：
+Add to config.json:
   "worker_api_key": "your-api-key",
   "worker_model": "gpt-4o",
-  "worker_base_url": "https://api.openai.com/v1"   （本地模型改成 http://localhost:11434/v1）
+  "worker_base_url": "https://api.openai.com/v1"   (for local Ollama: http://localhost:11434/v1)
 """
 
 import json

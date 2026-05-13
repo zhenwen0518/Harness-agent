@@ -26,7 +26,7 @@ def test_resume_no_queue_exits(capsys):
             main()
     assert exc.value.code == 1
     captured = capsys.readouterr()
-    assert "没有找到" in captured.out
+    assert "No resumable session found" in captured.out
 
 
 def test_resume_resets_running_tasks(tmp_path):

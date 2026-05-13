@@ -20,12 +20,12 @@ def _load_config() -> dict:
 
 
 def confirm_tasks(tasks: list[dict]) -> bool:
-    print("\n[Harness] 拆解出以下任务，请确认：\n")
+    print("\n[Harness] Tasks decomposed — please confirm:\n")
     for task in tasks:
-        deps = f"  (依赖: {', '.join(task['depends_on'])})" if task["depends_on"] else ""
+        deps = f"  (depends on: {', '.join(task['depends_on'])})" if task["depends_on"] else ""
         print(f"  {task['id']}. {task['description']}{deps}")
     print()
-    answer = input("确认执行？(y/n): ").strip().lower()
+    answer = input("Proceed? (y/n): ").strip().lower()
     return answer == "y"
 
 
@@ -37,7 +37,7 @@ def _cascade_fail(queue: dict, failed_id: str, session_id: str):
         for task in queue["tasks"]:
             if task["status"] == "PENDING" and set(task["depends_on"]) & failed_ids:
                 task["status"] = "FAILED"
-                task["result"] = f"依赖任务 {set(task['depends_on']) & failed_ids} 失败，跳过执行"
+                task["result"] = f"Skipped: dependency {set(task['depends_on']) & failed_ids} failed"
                 log_event(session_id, {"type": "task_failed", "task_id": task["id"],
                                        "error": task["result"]})
                 failed_ids.add(task["id"])
@@ -66,7 +66,7 @@ def execute_queue(queue: dict, config: dict | None = None):
                 if task["id"] not in futures:
                     depth = task.get("depth", 0)
                     if depth < MAX_DEPTH and is_complex(task["description"]):
-                        print(f"[Task {task['id']}] 任务较复杂，正在拆分...")
+                        print(f"[Task {task['id']}] Task is complex, splitting...")
                         subtasks = decompose_task(task["description"], task["id"])
                         for st in subtasks:
                             st.setdefault("status", "PENDING")
@@ -78,7 +78,7 @@ def execute_queue(queue: dict, config: dict | None = None):
                         log_event(session_id, {"type": "task_expanded", "task_id": task["id"],
                                                "subtasks": [s["id"] for s in subtasks]})
                     else:
-                        print(f"[Task {task['id']}] 开始：{task['description'][:60]}...")
+                        print(f"[Task {task['id']}] Starting: {task['description'][:60]}...")
                         update_task(queue, task["id"], status="RUNNING",
                                     started_at=datetime.now().isoformat())
                         log_event(session_id, {"type": "task_start", "task_id": task["id"]})
@@ -89,13 +89,13 @@ def execute_queue(queue: dict, config: dict | None = None):
                 if future.done():
                     success, output = future.result()
                     if success:
-                        print(f"[Task {task_id}] ✓ 完成")
+                        print(f"[Task {task_id}] ✓ Done")
                         update_task(queue, task_id, status="DONE", result=output,
                                     finished_at=datetime.now().isoformat())
                         log_event(session_id, {"type": "task_done", "task_id": task_id,
                                                "result": output[:500]})
                     else:
-                        print(f"[Task {task_id}] ✗ 失败: {output[:100]}")
+                        print(f"[Task {task_id}] ✗ Failed: {output[:100]}")
                         update_task(queue, task_id, status="FAILED", result=output,
                                     finished_at=datetime.now().isoformat())
                         log_event(session_id, {"type": "task_failed", "task_id": task_id,
@@ -111,7 +111,7 @@ def execute_queue(queue: dict, config: dict | None = None):
                 break
 
             if not futures and not get_pending_tasks(queue):
-                print("[Harness] 警告：存在无法解决的任务依赖，终止执行")
+                print("[Harness] Warning: unresolvable task dependencies detected, aborting")
                 break
 
             time.sleep(0.5)
@@ -121,9 +121,9 @@ def execute_queue(queue: dict, config: dict | None = None):
     save_queue(queue)
     log_event(session_id, {"type": "session_done", "status": queue["status"]})
     if failed:
-        print("\n[Harness] 执行完成，部分任务失败。事件记录于 session_store.jsonl")
+        print("\n[Harness] Finished with errors. Events logged to session_store.jsonl")
     else:
-        print("\n[Harness] 全部完成。事件记录于 session_store.jsonl")
+        print("\n[Harness] All tasks complete. Events logged to session_store.jsonl")
 
 
 def main():
@@ -132,9 +132,9 @@ def main():
     if "--resume" in sys.argv:
         queue = load_queue()
         if not queue:
-            print("[Harness] 没有找到可续接的任务。")
+            print("[Harness] No resumable session found.")
             sys.exit(1)
-        print(f"[Harness] 续接任务：{queue['goal']}")
+        print(f"[Harness] Resuming: {queue['goal']}")
         for task in queue["tasks"]:
             if task["status"] in ("RUNNING", "FAILED"):
                 task["status"] = "PENDING"
@@ -143,12 +143,12 @@ def main():
         return
 
     if len(sys.argv) < 2:
-        print("用法: python harness.py \"你的目标\"  或  python harness.py --resume")
+        print('Usage: python3 harness.py "your goal"  or  python3 harness.py --resume')
         sys.exit(1)
 
     goal = sys.argv[1]
-    print(f"\n[Harness] 收到目标：{goal}")
-    print("[Harness] 正在分析目标...")
+    print(f"\n[Harness] Goal received: {goal}")
+    print("[Harness] Analyzing goal...")
 
     tasks = decompose_goal(goal)
     for task in tasks:
@@ -161,7 +161,7 @@ def main():
     queue["tasks"] = tasks
 
     if not confirm_tasks(tasks):
-        print("[Harness] 已取消。")
+        print("[Harness] Cancelled.")
         sys.exit(0)
 
     save_queue(queue)

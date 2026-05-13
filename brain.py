@@ -40,14 +40,14 @@ def decompose_goal(goal: str) -> list[dict]:
     if config.get("brain_provider", "stub") == "stub":
         return [{"id": "t1", "description": goal, "depends_on": []}]
 
-    prompt = f"""将以下目标分解为具体的可执行子任务列表。每个子任务将由 Claude Code 独立执行。
+    prompt = f"""Decompose the following goal into a list of concrete, executable subtasks. Each subtask will be executed independently by an AI agent.
 
-目标：{goal}
+Goal: {goal}
 
-只返回 JSON 数组，不要其他文字：
+Return only a JSON array, no other text:
 [
-  {{"id": "t1", "description": "完整的子任务描述", "depends_on": []}},
-  {{"id": "t2", "description": "完整的子任务描述", "depends_on": ["t1"]}}
+  {{"id": "t1", "description": "full subtask description", "depends_on": []}},
+  {{"id": "t2", "description": "full subtask description", "depends_on": ["t1"]}}
 ]"""
 
     return _parse_json(_call_brain(prompt))
@@ -58,12 +58,12 @@ def is_complex(task_description: str) -> bool:
     if config.get("brain_provider", "stub") == "stub":
         return False
 
-    prompt = f"""判断以下任务是否过于复杂，无法由一个 AI 在单次对话中独立完成。
-如果任务涉及多个不同技术模块、需要多个文件协同实现、或描述中包含"并且"/"同时"/"以及"等连接多个独立目标的词，则认为过于复杂。
+    prompt = f"""Determine whether the following task is too complex to be completed by a single AI agent in one conversation.
+Consider it too complex if it involves multiple distinct technical components, requires coordinating multiple files, or contains conjunctions like "and also" / "as well as" that suggest multiple independent goals.
 
-任务：{task_description}
+Task: {task_description}
 
-只回答 yes 或 no："""
+Reply with only yes or no:"""
 
     return _call_brain(prompt).strip().lower().startswith("yes")
 
@@ -73,14 +73,14 @@ def decompose_task(task_description: str, parent_id: str) -> list[dict]:
     if config.get("brain_provider", "stub") == "stub":
         return [{"id": f"{parent_id}.1", "description": task_description, "depends_on": []}]
 
-    prompt = f"""将以下任务分解为具体的可执行子任务。每个子任务必须足够简单，能由一个 AI 在单次对话中独立完成。
+    prompt = f"""Break down the following task into smaller subtasks. Each subtask must be simple enough for a single AI agent to complete in one conversation.
 
-任务：{task_description}
+Task: {task_description}
 
-只返回 JSON 数组，id 使用 {parent_id}.1、{parent_id}.2 等格式，不要其他文字：
+Return only a JSON array using {parent_id}.1, {parent_id}.2, etc. as IDs, no other text:
 [
-  {{"id": "{parent_id}.1", "description": "完整的子任务描述", "depends_on": []}},
-  {{"id": "{parent_id}.2", "description": "完整的子任务描述", "depends_on": ["{parent_id}.1"]}}
+  {{"id": "{parent_id}.1", "description": "full subtask description", "depends_on": []}},
+  {{"id": "{parent_id}.2", "description": "full subtask description", "depends_on": ["{parent_id}.1"]}}
 ]"""
 
     return _parse_json(_call_brain(prompt))

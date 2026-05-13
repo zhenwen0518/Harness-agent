@@ -37,8 +37,8 @@ def test_decompose_goal_api_mode_parses_json(tmp_path):
     }))
 
     fake_tasks = [
-        {"id": "t1", "description": "设计数据库", "depends_on": []},
-        {"id": "t2", "description": "写后端 API", "depends_on": ["t1"]}
+        {"id": "t1", "description": "design database schema", "depends_on": []},
+        {"id": "t2", "description": "implement backend API", "depends_on": ["t1"]}
     ]
     fake_response = MagicMock()
     fake_response.status_code = 200
