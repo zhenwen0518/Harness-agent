@@ -94,32 +94,33 @@ python3 harness.py --resume
 
 已完成的任务自动跳过，从中断处继续。
 
-### 监控任务进度
+### 实时监控面板（内置）
 
-harness 运行中（或结束后），另开一个终端，使用 `monitor.py`：
-
-```bash
-python3 monitor.py              # 快照：查看当前任务状态表格
-python3 monitor.py --watch      # 实时监控：每秒自动刷新
-python3 monitor.py --tail       # 日志流：显示最近 30 条事件
-python3 monitor.py --tail 50    # 日志流：显示最近 N 条事件
-python3 monitor.py --summary    # 摘要报告：耗时、成功/失败统计、错误详情
-```
-
-`--watch` 效果示例：
+harness 运行时会自动在同一个终端实时刷新任务状态，无需另开窗口：
 
 ```
 目标：写一个 Flask Web 应用，支持用户注册登录
-会话：sess-001  创建：10:01:02  状态：RUNNING
-
 进度：2/4 完成  1 运行中  0 失败
 
-ID         状态       开始       耗时     描述
---------------------------------------------------------------------------------
-t1         ✓ DONE     10:01:03   12s      设计数据库 schema
-t2         ◉ RUNNING  10:01:16   8s       实现后端 API
-t3         ○ PENDING  -          -        实现前端页面
-t4         ○ PENDING  -          -        写集成测试
+ID         状态       耗时   描述
+────────────────────────────────────────────────────────────────────────
+t1         ✓ DONE     12s    设计数据库 schema
+t2         ◉ RUNNING  8s     实现后端 API
+t3         ○ PENDING  -      实现前端页面
+t4         ○ PENDING  -      写集成测试
+```
+
+每当有任务启动、完成或失败，面板自动清屏刷新。
+
+### 事后查询（monitor.py）
+
+任务结束后，可用 `monitor.py` 做进一步分析：
+
+```bash
+python3 monitor.py              # 快照：当前任务状态表格
+python3 monitor.py --tail       # 日志流：显示最近 30 条事件
+python3 monitor.py --tail 50    # 日志流：显示最近 N 条事件
+python3 monitor.py --summary    # 摘要报告：耗时、成功/失败统计、错误详情
 ```
 
 ---
@@ -223,11 +224,14 @@ python3 harness.py "your goal"
 python3 harness.py --resume
 ```
 
-### Monitor task progress
+### Built-in live dashboard
+
+Harness renders a task status table in the same terminal, refreshing automatically on every state change — no second terminal needed.
+
+### Post-run analysis (monitor.py)
 
 ```bash
 python3 monitor.py              # Snapshot: current task status table
-python3 monitor.py --watch      # Live view: auto-refreshes every second
 python3 monitor.py --tail       # Tail: stream the last 30 event log entries
 python3 monitor.py --tail 50    # Tail: show last N entries
 python3 monitor.py --summary    # Summary: timing, pass/fail counts, error details
